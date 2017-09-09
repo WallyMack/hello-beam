@@ -9,7 +9,7 @@ from apache_beam.options.pipeline_options import PipelineOptions
 
 options = PipelineOptions()
 with beam.Pipeline(options=options) as p:
-    lines = p | beam.io.ReadFromText('wordcount.txt')
+    lines = p | 'Create' >> beam.Create(['cat dog', 'snake cat', 'fox dog'])
 
     counts = (
         lines
