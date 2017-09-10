@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import re
-import sys
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 
 
-options = PipelineOptions()
-with beam.Pipeline(options=options) as p:
+with beam.Pipeline(options=PipelineOptions()) as p:
     lines = p | 'Create' >> beam.Create(['cat dog', 'snake cat', 'fox dog'])
 
     counts = (
         lines
-        | 'Split' >> (beam.FlatMap(lambda x: re.split(r'\s+', x))
+        | 'Split' >> (beam.FlatMap(lambda x: x.split(' '))
                       .with_output_types(unicode))
         | 'PairWithOne' >> beam.Map(lambda x: (x, 1))
         | 'GroupAndSum' >> beam.CombinePerKey(sum)
