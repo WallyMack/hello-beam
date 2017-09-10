@@ -5,7 +5,7 @@ import re
 import sys
 import time
 from dateutil.parser import parse as parse_datetime
-from dateutil.tz import tzutc
+from dateutil.tz import tzlocal
 
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
@@ -18,7 +18,7 @@ class Print(beam.PTransform):
 
 class PrintWindowFn(beam.DoFn):
     def process(self, element, window=beam.DoFn.WindowParam):
-        print('%s @ %s' % (window, element))
+        print('[%s, %s) @ %s' % (window.start.isoformat(), window.end.isoformat(), element))
 
 
 def extract_timestamp(log):
@@ -26,7 +26,7 @@ def extract_timestamp(log):
     if mo is not None:
         try:
             dt = parse_datetime(mo.group(0), fuzzy=True)
-            dt = dt.astimezone(tzutc())
+            dt = dt.astimezone(tzlocal())
             return int(time.mktime(dt.timetuple()))
         except Exception:
             pass
@@ -41,11 +41,11 @@ class AddTimestampDoFn(beam.DoFn):
 
 options = PipelineOptions()
 with beam.Pipeline(options=options) as p:
-    lines = p | 'create' >> beam.io.ReadFromText('access.log')
+    lines = p | 'create' >> beam.io.ReadFromText('access.log.head')
     windowed_counts = (
         lines
         | 'timestamp' >> beam.ParDo(AddTimestampDoFn())
-        | 'window' >> beam.WindowInto(beam.window.FixedWindows(1800)) # 30 minutes
+        | 'window' >> beam.WindowInto(beam.window.SlidingWindows(600, 300))
         | 'count' >> beam.CombineGlobally(beam.combiners.CountCombineFn()).without_defaults()
     )
     windowed_counts =  windowed_counts | beam.ParDo(PrintWindowFn())
