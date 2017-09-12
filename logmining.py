@@ -46,6 +46,7 @@ with beam.Pipeline(options=options) as p:
         lines
         | 'timestamp' >> beam.ParDo(AddTimestampDoFn())
         | 'window' >> beam.WindowInto(beam.window.SlidingWindows(600, 300))
-        | 'count' >> beam.CombineGlobally(beam.combiners.CountCombineFn()).without_defaults()
+        | 'count' >> (beam.CombineGlobally(beam.combiners.CountCombineFn())
+                      .without_defaults())
     )
     windowed_counts =  windowed_counts | beam.ParDo(PrintWindowFn())

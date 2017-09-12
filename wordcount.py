@@ -6,7 +6,7 @@ from apache_beam.options.pipeline_options import PipelineOptions
 
 
 with beam.Pipeline(options=PipelineOptions()) as p:
-    lines = p | 'Create' >> beam.Create(['cat dog', 'snake cat', 'fox dog'])
+    lines = p | 'Create' >> beam.Create(['cat dog', 'snake cat', 'dog'])
 
     counts = (
         lines
