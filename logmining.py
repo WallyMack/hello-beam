@@ -41,12 +41,12 @@ class AddTimestampDoFn(beam.DoFn):
 
 options = PipelineOptions()
 with beam.Pipeline(options=options) as p:
-    lines = p | 'create' >> beam.io.ReadFromText('access.log.head')
+    lines = p | 'Create' >> beam.io.ReadFromText('access.log')
     windowed_counts = (
         lines
-        | 'timestamp' >> beam.ParDo(AddTimestampDoFn())
-        | 'window' >> beam.WindowInto(beam.window.SlidingWindows(600, 300))
-        | 'count' >> (beam.CombineGlobally(beam.combiners.CountCombineFn())
+        | 'Timestamp' >> beam.ParDo(AddTimestampDoFn())
+        | 'Window' >> beam.WindowInto(beam.window.SlidingWindows(600, 300))
+        | 'Count' >> (beam.CombineGlobally(beam.combiners.CountCombineFn())
                       .without_defaults())
     )
     windowed_counts =  windowed_counts | beam.ParDo(PrintWindowFn())
